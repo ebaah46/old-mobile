@@ -10,6 +10,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         home: MyHomePage(),
         theme: ThemeData(
+          fontFamily: "Montserrat",
           primaryColor: Colors.amberAccent,
         ));
   }

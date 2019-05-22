@@ -86,7 +86,7 @@ class HomeWidgetState extends State<HomeWidget> {
         ],
         centerTitle: true,
         title: Text(
-          "Home",
+          "Logs",
           style: TextStyle(fontSize: 22.0),
         ),
       ),

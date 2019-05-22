@@ -8,10 +8,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: MyHomePage(),
         theme: ThemeData(
           fontFamily: "Montserrat",
-          primaryColor: Colors.amberAccent,
+          primaryColor: Colors.amberAccent[400],
         ));
   }
 }

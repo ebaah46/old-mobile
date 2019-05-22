@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import './first.dart';
 import './alertwidget.dart';
 import './homewidget.dart';
 import './aboutwidget.dart';
@@ -16,7 +17,12 @@ class MyHomePage extends StatefulWidget {
 class MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  final _widgetOption = [Text("Home"), Text("Alert"), Text("About")];
+  final _widgetOption = [
+    Text("Home"),
+    Text("Logs"),
+    Text("Alert"),
+    Text("About")
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +35,9 @@ class MyHomePageState extends State<MyHomePage> {
         bottomNavigationBar: BottomNavigationBar(
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-                icon: Icon(Icons.home), title: Text('Home')),
+                icon: Icon(Icons.home), title: Text("Home")),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.history), title: Text('Logs')),
             BottomNavigationBarItem(
                 icon: Icon(Icons.add_alert), title: Text('Alert')),
             BottomNavigationBarItem(
@@ -42,12 +50,16 @@ class MyHomePageState extends State<MyHomePage> {
 
   Widget _buildChild() {
     if (_widgetOption.elementAt(_selectedIndex) == _widgetOption.elementAt(0)) {
-      return HomeWidget();
+      return FirstScreen();
     } else if (_widgetOption.elementAt(_selectedIndex) ==
         _widgetOption.elementAt(1)) {
+      return HomeWidget();
+    } else if (_widgetOption.elementAt(_selectedIndex) ==
+        _widgetOption.elementAt(2)) {
       return AlertWidget();
-    } else
+    } else {
       return AboutWidget();
+    }
   }
 
   void _onItemTapped(int value) {

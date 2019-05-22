@@ -69,7 +69,7 @@ class AboutWidgetState extends State<AboutWidget> {
                                 )
                               ],
                             ),
-                            onTap: _navToDialerScreen,
+                            onTap: navToDialerScreen,
                           ),
                         ),
                         SizedBox(
@@ -185,7 +185,7 @@ class AboutWidgetState extends State<AboutWidget> {
             )));
   }
 
-  _navToDialerScreen() async {
+  static navToDialerScreen() async {
     const url = 'tel: 193';
     if (await canLaunch(url)) {
       await launch(url);
@@ -194,7 +194,7 @@ class AboutWidgetState extends State<AboutWidget> {
     }
   }
 
-  safetyThresholds() async {
+  static safetyThresholds() async {
     const url = 'https://www.osha.gov/SLTC/indoorairquality/schools.html';
     if (await canLaunch(url)) {
       await launch(url, forceWebView: true, enableJavaScript: true);
@@ -203,7 +203,7 @@ class AboutWidgetState extends State<AboutWidget> {
     }
   }
 
-  faq() async {
+  static faq() async {
     const url = 'https://www.osha.gov/SLTC/indoorairquality/faqs.html';
     if (await canLaunch(url)) {
       await launch(url, forceWebView: true, enableJavaScript: true);

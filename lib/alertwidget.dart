@@ -51,17 +51,4 @@ class AlertWidgetState extends State<AlertWidget> {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => AlertScreen(date)));
   }
-
-  // _showToastMessage() {
-  //   return Fluttertoast.showToast(
-  //       msg: "Day selected was ",
-  //       toastLength: Toast.LENGTH_SHORT,
-  //       gravity: ToastGravity.BOTTOM,
-  //       timeInSecForIos: 2,
-  //       backgroundColor: Colors.blueAccent,
-  //       textColor: Colors.white,
-  //       fontSize: 16.0);
-  // }
-// Widget to return when No data was recorded for that day
-
 }

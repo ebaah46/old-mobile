@@ -1,16 +1,45 @@
 import 'package:flutter/material.dart';
 import 'dart:convert'; // Class to convert Json data received from webserver into a Data
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:isolate/isolate.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:email_validator/email_validator.dart';
+// import 'package:permission/permission.dart';
+
 import 'package:old/graphContainer.dart';
 import './data.dart';
+
+// Data Storage
+
+class DataStorage {
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/data.txt');
+  }
+
+  Future<File> _writeData(String data, FileMode mode) async {
+    final file = await _localFile;
+    return file.writeAsString(data, mode: mode);
+  }
+
+  Future<String> _readData() async {
+    final file = await _localFile;
+    var contents = file.readAsString();
+    return contents;
+  }
+}
 
 // Data for file
 List<String> emailData = new List();
@@ -38,7 +67,9 @@ Future<List<Data>> fetchInBackground(http.Client client) async {
 }
 
 class HomeWidget extends StatefulWidget {
-  HomeWidget({Key key}) : super(key: key);
+  HomeWidget({
+    Key key,
+  }) : super(key: key);
 
   @override
   HomeWidgetState createState() {
@@ -47,6 +78,7 @@ class HomeWidget extends StatefulWidget {
 }
 
 class HomeWidgetState extends State<HomeWidget> {
+  final DataStorage storage = DataStorage();
   List<Data> infoData = new List();
   String oxy;
   List<double> oxyData = new List();
@@ -59,9 +91,15 @@ class HomeWidgetState extends State<HomeWidget> {
 
   final String mqSensor = "Mq State";
   bool refreshComplete = false;
+  String file = '';
+  File myFile;
+// Send Data button variables
+  var reccpientMail;
+  String response = 'Email sent to technician';
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       new FlutterLocalNotificationsPlugin();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -74,7 +112,6 @@ class HomeWidgetState extends State<HomeWidget> {
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: onSelectNotification);
-    // Inititializing shared preferences object
   }
 
   @override
@@ -102,22 +139,26 @@ class HomeWidgetState extends State<HomeWidget> {
 
   Future refreshFuture() async {
     final response = await fetchInBackground(http.Client());
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (response.isNotEmpty) {
-      Flushbar(
-        title: "Refresh Complete",
-        message: "Data successfully fetched from database",
-        flushbarPosition: FlushbarPosition.BOTTOM,
-        flushbarStyle: FlushbarStyle.FLOATING,
-        borderRadius: 25.0,
-        backgroundColor: Colors.blueGrey[800],
-        duration: Duration(seconds: 3),
-      ).show(context);
+      final snackbar = SnackBar(
+        content: Text("Data successfully loaded..",
+            style: TextStyle(
+              fontSize: 15.0,
+              fontFamily: "Roboto",
+            )),
+        action: SnackBarAction(
+          onPressed: () {},
+          label: "Ok",
+          textColor: Colors.blueAccent,
+        ),
+      );
+      Scaffold.of(context).showSnackBar(snackbar);
     }
 
     setState(() {
       infoData.removeRange(0, infoData.length);
-      infoData.addAll(response);
+      infoData.addAll(response.reversed);
       oxyData.removeRange(0, oxyData.length);
       for (var i = 0; i < infoData.length; i++) {
         oxyData.add(response.elementAt(i).oxyVal);
@@ -128,10 +169,23 @@ class HomeWidgetState extends State<HomeWidget> {
             response.elementAt(i).oxyVal > 21.5) {
           _notificationAlert();
         }
-        emailData.add(response.elementAt(i).oxyVal.toString());
-        prefs.setStringList('Oxygen Value ' + i.toString(), emailData);
-        print(emailData[i]);
+        //Checking permission
+        // checkPermission();
+        storage
+            ._writeData(
+                response.elementAt(i).oxyVal.toString(), FileMode.append)
+            .then((onValue) {
+          myFile = onValue;
+        });
+        print(storage._readData().then((onValue) {}));
       }
+      // storage._writeData("3", FileMode.write);
+      // storage._readData().then((value) {
+      //   print(value);
+      // });
+      // storage._localPath.then((onValue) {
+      //   print(onValue + '/data.txt');
+      // });
     });
     return infoData;
   }
@@ -165,7 +219,10 @@ class HomeWidgetState extends State<HomeWidget> {
                   if (data[position].oxyVal > 19.5 &&
                       data[position].mqState == 0) {
                     return AlertDialog(
-                      title: Text(" Details"),
+                      title: Text(
+                        " Details",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       content: Text(
                           "The lab atmosphere is good.\nOxygen level and MQ levels are safe"),
                       actions: <Widget>[
@@ -339,7 +396,7 @@ class HomeWidgetState extends State<HomeWidget> {
                         style: TextStyle(
                           fontSize: 15.0,
                         )),
-                    onPressed: sendData,
+                    onPressed: sendDataButton,
                   ),
                 )
               ],
@@ -408,7 +465,84 @@ class HomeWidgetState extends State<HomeWidget> {
     Navigator.pop(context);
   }
 
-  void sendData() {}
+  Future<void> sendDataButton() async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(
+              'Email Details',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                  fontSize: 16),
+            ),
+            titlePadding: EdgeInsets.all(10.0),
+            contentPadding: EdgeInsets.all(5.0),
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Enter email address',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontFamily: 'Roboto',
+                    )),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  style: TextStyle(fontFamily: "Roboto", fontSize: 12.0),
+                  textCapitalization: TextCapitalization.none,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                      labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5.0))),
+                  validator: (String value) {
+                    if (value.isEmpty || EmailValidator.validate(value) != true)
+                      return 'Enter correct email address';
+                    else {
+                      reccpientMail = value;
+                    }
+                  },
+                ),
+              ),
+              RaisedButton(
+                splashColor: Colors.amber,
+                padding: EdgeInsets.all(5),
+                elevation: 5.0,
+                textColor: Colors.white,
+                onPressed: () {
+                  _sendData();
+                },
+                child: Text(
+                  "Send",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                color: Colors.deepPurple,
+              )
+            ],
+          );
+        });
+  }
+
+  Future<void> _sendData() async {
+    storage._localPath.then((onValue) {
+      file = onValue + '/data.txt';
+    });
+    final Email email = Email(
+        body: 'File containing data recorded from Oxygen sensor',
+        subject: 'Oxygen data',
+        recipients: [reccpientMail],
+        attachmentPath: myFile.path);
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      print(error.toString());
+    }
+    // _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(response)));
+  }
 
   Future _notificationAlert() async {
     final androidNotificationChannel = new AndroidNotificationDetails(
@@ -421,4 +555,16 @@ class HomeWidgetState extends State<HomeWidget> {
     await flutterLocalNotificationsPlugin.show(
         0, "Danger", "Dangerous data recorded", platformNotificationDetails);
   }
+
+  // Future<void> checkPermission() async {
+  //   List<Permissions> permissionNames = await Permission.requestPermissions([
+  //     PermissionName.Storage,
+  //   ]);
+  //   if (permissionNames.elementAt(0).permissionStatus ==
+  //       PermissionStatus.allow) {
+  //     print('Permission granted');
+  //   } else {
+  //     print('Permission denied');
+  //   }
+  // }
 }

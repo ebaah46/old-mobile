@@ -33,15 +33,26 @@ class MyHomePageState extends State<MyHomePage> {
           child: _buildChild(),
         ),
         bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-                icon: Icon(Icons.home), title: Text("Home")),
+                icon: Icon(Icons.home),
+                title: Text(
+                  "Home",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                )),
             BottomNavigationBarItem(
-                icon: Icon(Icons.history), title: Text('Logs')),
+                icon: Icon(Icons.history),
+                title: Text('Logs',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
             BottomNavigationBarItem(
-                icon: Icon(Icons.add_alert), title: Text('Alert')),
+                icon: Icon(Icons.add_alert),
+                title: Text('Alert',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
             BottomNavigationBarItem(
-                icon: Icon(Icons.info), title: Text('About')),
+                icon: Icon(Icons.info),
+                title: Text('About',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
           ],
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,

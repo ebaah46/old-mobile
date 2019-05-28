@@ -134,14 +134,6 @@ class AlertScreenState extends State<AlertScreen> {
     );
   }
 
-  // _notification() async {
-  //   int notificationId = await ScheduledNotifications.scheduleNotification(
-  //       new DateTime.now().add(new Duration(seconds: 5)).millisecondsSinceEpoch,
-  //       "Ticker text",
-  //       "Danger",
-  //       "Dangerous data has been recorded on your OLD system.Act now!");
-  // }
-
   Widget _errorInData() {
     return Container(
       padding: EdgeInsets.fromLTRB(10, 200, 5, 50),

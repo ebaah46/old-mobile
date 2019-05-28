@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:old/contact.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutWidget extends StatefulWidget {
@@ -90,7 +91,7 @@ class AboutWidgetState extends State<AboutWidget> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text("Safety Thresholds",
+                                  child: Text("Safety Tips",
                                       style: TextStyle(
                                         fontSize: 15.0,
                                       )),
@@ -150,33 +151,6 @@ class AboutWidgetState extends State<AboutWidget> {
                             onTap: contactDev,
                           ),
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black38))),
-                          child: ListTile(
-                            leading: Row(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    Icons.payment,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Support Us",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      )),
-                                )
-                              ],
-                            ),
-                            onTap: supportUs,
-                          ),
-                        ),
                       ],
                     ),
                   ))
@@ -212,14 +186,9 @@ class AboutWidgetState extends State<AboutWidget> {
     }
   }
 
-  contactDev() async {
-    const url =
-        'mailto:ebaah72@gmail.com?subject=Info about developers&body=nothing';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Cannot open email $url';
-    }
+  contactDev() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ContactDev()));
   }
 
   void supportUs() async {

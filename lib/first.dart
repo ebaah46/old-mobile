@@ -369,7 +369,7 @@ class _FirstScreenState extends State<FirstScreen>
                           Padding(
                             padding: const EdgeInsets.only(left: 165.0),
                             child: Text(
-                              "Air Safety",
+                              "Air Quality",
                               style: TextStyle(
                                   fontFamily: "Roboto",
                                   color: Colors.white,
@@ -433,7 +433,7 @@ class _FirstScreenState extends State<FirstScreen>
                                                                 8.0,
                                                                 0.0),
                                                         child: Text(
-                                                          "Air Safety",
+                                                          "Air Quality",
                                                           style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight

@@ -42,6 +42,7 @@ bool flag = false;
 List level = ["40%", "60%", "80%"];
 List status = ["LOW", "OKAY", "GREAT"];
 List mqStates = ["GOOD", "BAD"];
+Timer timer;
 
 class _FirstScreenState extends State<FirstScreen>
     with SingleTickerProviderStateMixin {
@@ -59,6 +60,13 @@ class _FirstScreenState extends State<FirstScreen>
     circleAnim = Tween(begin: 1.0, end: 0).animate(CurvedAnimation(
         curve: Interval(0.2, 1.0, curve: Curves.bounceInOut),
         parent: controller));
+    timer = Timer.periodic(Duration(minutes: 5), (Timer t) => handleResponse());
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -360,7 +368,7 @@ class _FirstScreenState extends State<FirstScreen>
                               decoration: BoxDecoration(
                                   image: DecorationImage(
                                       image: AssetImage(
-                                          "assets/images/app_icon.jpeg"))),
+                                          "assets/images/app_icon.png"))),
                             ),
                           ),
                           SizedBox(
@@ -541,5 +549,6 @@ class _FirstScreenState extends State<FirstScreen>
     setState(() {
       load = oxyData;
     });
+    print('Request complete');
   }
 }

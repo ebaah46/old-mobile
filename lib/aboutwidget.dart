@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:old/contact.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,16 +12,19 @@ class AboutWidget extends StatefulWidget {
 }
 
 class AboutWidgetState extends State<AboutWidget> {
+  ScrollController controller = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: NestedScrollView(
+            scrollDirection: Axis.vertical,
             headerSliverBuilder:
                 (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
                 SliverAppBar(
-                  expandedHeight: 250.0,
-                  floating: false,
+                  expandedHeight: 290.0,
+                  floating: true,
+                  snap: false,
                   pinned: true,
                   centerTitle: true,
                   flexibleSpace: FlexibleSpaceBar(
@@ -40,123 +44,126 @@ class AboutWidgetState extends State<AboutWidget> {
                 ),
               ];
             },
-            body: Container(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                      child: Container(
-                    child: ListView(
-                      children: <Widget>[
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black38))),
-                          child: ListTile(
-                            leading: Row(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(Icons.call, color: Colors.black),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Contact Emergency Number",
-                                    style: TextStyle(
-                                      fontSize: 15.0,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                            onTap: navToDialerScreen,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 1.0,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black38))),
-                          child: ListTile(
-                            leading: Row(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(Icons.add_alert,
-                                      color: Colors.black),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Safety Tips",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      )),
-                                )
-                              ],
-                            ),
-                            onTap: safetyThresholds,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black38))),
-                          child: ListTile(
-                            leading: Row(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(Icons.question_answer,
-                                      color: Colors.black),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("FAQ",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      )),
-                                )
-                              ],
-                            ),
-                            onTap: faq,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black38))),
-                          child: ListTile(
-                            leading: Row(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(Icons.contact_mail,
-                                      color: Colors.black),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Contact Developers",
-                                      style: TextStyle(
-                                        fontSize: 15.0,
-                                      )),
-                                )
-                              ],
-                            ),
-                            onTap: contactDev,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ))
-                ],
-              ),
+            body: ListView.custom(
+              controller: controller,
+              scrollDirection: Axis.vertical,
+              physics: BouncingScrollPhysics(),
+              childrenDelegate: SliverChildListDelegate([
+                // _space(),
+                _dialerChild(),
+                _space(),
+                _safetyTipsChild(),
+                _space(),
+                _faqChild(),
+                _space(),
+                _contactDevsChild(),
+                _space()
+              ]),
             )));
+  }
+
+  Widget _dialerChild() {
+    return InkWell(
+      onTap: navToDialerScreen,
+      splashColor: Colors.amber,
+      child: Container(
+        width: double.infinity,
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Icon(Icons.call, size: 22, color: Colors.black),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text('Contact Emergency Number',
+                  style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _safetyTipsChild() {
+    return InkWell(
+      onTap: safetyThresholds,
+      splashColor: Colors.amber,
+      child: Container(
+        width: double.infinity,
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Icon(Icons.more, size: 22, color: Colors.black),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text('Safety Tips', style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _faqChild() {
+    return InkWell(
+      onTap: faq,
+      splashColor: Colors.amber,
+      child: Container(
+        width: double.infinity,
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Icon(Icons.question_answer, size: 22, color: Colors.black),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text('FAQ', style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _contactDevsChild() {
+    return InkWell(
+      onTap: contactDev,
+      splashColor: Colors.amber,
+      child: Container(
+        width: double.infinity,
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Icon(Icons.email, size: 22, color: Colors.black),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text('Contact Developers', style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _space() {
+    return Container(
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.black38, width: 2))),
+    );
   }
 
   static navToDialerScreen() async {
@@ -189,14 +196,5 @@ class AboutWidgetState extends State<AboutWidget> {
   contactDev() {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => ContactDev()));
-  }
-
-  void supportUs() async {
-    const url = 'https://expresspay.com';
-    if (await canLaunch(url)) {
-      await (launch(url));
-    } else {
-      throw 'Cannot open $url';
-    }
   }
 }

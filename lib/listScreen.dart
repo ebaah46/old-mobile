@@ -37,6 +37,7 @@ class ListScreenState extends State<ListScreen> {
   Widget build(BuildContext context) {
     return Container(
         child: ListView.builder(
+            physics: BouncingScrollPhysics(),
             itemCount: _myFilteredData.length,
             itemBuilder: (context, position) {
               // Safety Icon handler

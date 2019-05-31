@@ -31,7 +31,10 @@ class DataStorage {
 
   Future<File> _writeData(String data, FileMode mode) async {
     final file = await _localFile;
-    return file.writeAsString(data, mode: mode);
+    return file.writeAsString(
+      data + ',',
+      mode: mode,
+    );
   }
 
   Future<String> _readData() async {
@@ -81,6 +84,8 @@ class HomeWidgetState extends State<HomeWidget> {
   final DataStorage storage = DataStorage();
   List<Data> infoData = new List();
   String oxy;
+  // Variable for holding data that would be attached to the email
+  String data;
   List<double> oxyData = new List();
 
   final String sensorName = "Sensor";
@@ -96,10 +101,11 @@ class HomeWidgetState extends State<HomeWidget> {
 // Send Data button variables
   var reccpientMail;
   String response = 'Email sent to technician';
-
+  bool buttonState = false;
+  bool emailState = false;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       new FlutterLocalNotificationsPlugin();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -166,26 +172,23 @@ class HomeWidgetState extends State<HomeWidget> {
       }
       for (var i = 0; i < infoData.length; i++) {
         if (response.elementAt(i).oxyVal < 19.5 ||
-            response.elementAt(i).oxyVal > 21.5) {
+            response.elementAt(i).oxyVal > 21.5 ||
+            response.elementAt(i).mqState == 1) {
           _notificationAlert();
         }
-        //Checking permission
-        // checkPermission();
+
         storage
             ._writeData(
                 response.elementAt(i).oxyVal.toString(), FileMode.append)
             .then((onValue) {
           myFile = onValue;
+          print('Data written to file');
         });
-        print(storage._readData().then((onValue) {}));
+        storage._readData().then((onValue) {
+          data = onValue;
+          print(data);
+        });
       }
-      // storage._writeData("3", FileMode.write);
-      // storage._readData().then((value) {
-      //   print(value);
-      // });
-      // storage._localPath.then((onValue) {
-      //   print(onValue + '/data.txt');
-      // });
     });
     return infoData;
   }
@@ -219,6 +222,8 @@ class HomeWidgetState extends State<HomeWidget> {
                   if (data[position].oxyVal > 19.5 &&
                       data[position].mqState == 0) {
                     return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       title: Text(
                         " Details",
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -227,10 +232,11 @@ class HomeWidgetState extends State<HomeWidget> {
                           "The lab atmosphere is good.\nOxygen level and MQ levels are safe"),
                       actions: <Widget>[
                         RaisedButton(
+                          color: Colors.deepPurple,
                           child: Text(
                             "Close",
                             style:
-                                TextStyle(color: Colors.white, fontSize: 12.0),
+                                TextStyle(color: Colors.white, fontSize: 14.0),
                           ),
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -241,6 +247,8 @@ class HomeWidgetState extends State<HomeWidget> {
                   } else if (data[position].oxyVal < 19.5 &&
                       data[position].mqState == 0) {
                     return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       title: Text(" Details"),
                       content: Text(
                           "The lab atmosphere is not good.\nOxygen level is low but MQ levels are safe. Ventilate the room"),
@@ -260,6 +268,8 @@ class HomeWidgetState extends State<HomeWidget> {
                   } else if (data[position].oxyVal > 19.5 &&
                       data[position].mqState == 1) {
                     return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       title: Text(" Details"),
                       content: Text(
                           "The lab atmosphere is not good.\nOxygen level is OK but MQ levels are dangerous. Check source of gas leakage "),
@@ -279,6 +289,8 @@ class HomeWidgetState extends State<HomeWidget> {
                   } else if (data[position].oxyVal < 19.5 &&
                       data[position].mqState == 1) {
                     return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       title: Text(" Details"),
                       content: Text(
                           "The lab atmosphere is not good.\nOxygen and MQ levels are dangerous. Evacuate all students now! "),
@@ -314,8 +326,9 @@ class HomeWidgetState extends State<HomeWidget> {
             decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: Colors.black38))),
             child: GestureDetector(
-              onTap: onItemTap,
-              child: Container(
+              child: InkWell(
+                splashColor: Colors.amber,
+                onTap: onItemTap,
                 child: Column(
                   children: <Widget>[
                     Row(
@@ -371,6 +384,7 @@ class HomeWidgetState extends State<HomeWidget> {
         });
   }
 
+// bottom sheet to show graph of the oxygen data recorded
   bottomData() {
     showModalBottomSheet(
         context: context,
@@ -394,8 +408,7 @@ class HomeWidgetState extends State<HomeWidget> {
                     splashColor: Colors.amberAccent,
                     child: Text("Download",
                         style: TextStyle(
-                          fontSize: 15.0,
-                        )),
+                            fontSize: 15.0, fontWeight: FontWeight.bold)),
                     onPressed: sendDataButton,
                   ),
                 )
@@ -452,6 +465,7 @@ class HomeWidgetState extends State<HomeWidget> {
             ));
   }
 
+// Function to navigate to the dialer screeen
   call() async {
     const url = 'tel: 193';
     if (await canLaunch(url)) {
@@ -465,11 +479,14 @@ class HomeWidgetState extends State<HomeWidget> {
     Navigator.pop(context);
   }
 
-  Future<void> sendDataButton() async {
+// Send data button widget definition
+  Widget sendDataButton() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             title: Text(
               'Email Details',
               style: TextStyle(
@@ -480,70 +497,82 @@ class HomeWidgetState extends State<HomeWidget> {
             titlePadding: EdgeInsets.all(10.0),
             contentPadding: EdgeInsets.all(5.0),
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text('Enter email address',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'Roboto',
-                    )),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  style: TextStyle(fontFamily: "Roboto", fontSize: 12.0),
-                  textCapitalization: TextCapitalization.none,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                      labelStyle: TextStyle(fontStyle: FontStyle.italic),
-                      labelText: 'Email',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0))),
-                  validator: (String value) {
-                    if (value.isEmpty || EmailValidator.validate(value) != true)
-                      return 'Enter correct email address';
-                    else {
-                      reccpientMail = value;
-                    }
-                  },
+              Form(
+                key: formKey,
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('Enter email address',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Roboto',
+                          )),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        autovalidate: true,
+                        style: TextStyle(fontFamily: "Roboto", fontSize: 12.0),
+                        textCapitalization: TextCapitalization.none,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                            labelStyle: TextStyle(fontStyle: FontStyle.italic),
+                            labelText: 'Email',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5.0))),
+                        validator: (String value) {
+                          if (value.isEmpty ||
+                              EmailValidator.validate(value) != true)
+                            return 'Enter correct email address';
+                          else {
+                            emailState = true;
+                          }
+                        },
+                        onFieldSubmitted: _buttonState(),
+                        onSaved: (String value) {
+                          reccpientMail = value;
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: RaisedButton(
+                        disabledColor: Colors.grey,
+                        splashColor: Colors.amber,
+                        padding: EdgeInsets.all(5),
+                        elevation: 5.0,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          if (buttonState == false)
+                            return null;
+                          else {
+                            _sendData();
+                          }
+                        },
+                        child: Text(
+                          "Send Data",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        color: Colors.deepPurple,
+                      ),
+                    )
+                  ],
                 ),
-              ),
-              RaisedButton(
-                splashColor: Colors.amber,
-                padding: EdgeInsets.all(5),
-                elevation: 5.0,
-                textColor: Colors.white,
-                onPressed: () {
-                  _sendData();
-                },
-                child: Text(
-                  "Send",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                color: Colors.deepPurple,
               )
             ],
           );
         });
   }
 
-  Future<void> _sendData() async {
-    storage._localPath.then((onValue) {
-      file = onValue + '/data.txt';
-    });
-    final Email email = Email(
-        body: 'File containing data recorded from Oxygen sensor',
-        subject: 'Oxygen data',
-        recipients: [reccpientMail],
-        attachmentPath: myFile.path);
-    try {
-      await FlutterEmailSender.send(email);
-    } catch (error) {
-      print(error.toString());
-    }
-    // _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(response)));
+// Function to send data when the email is provided
+  void _sendData() {
+    formKey.currentState.save();
+    send();
+    print('Email successfully sent ');
   }
 
+// Function to provide the notification when dangerous data is recorded
   Future _notificationAlert() async {
     final androidNotificationChannel = new AndroidNotificationDetails(
         "channel id", "channelName", "channelDescription",
@@ -556,15 +585,22 @@ class HomeWidgetState extends State<HomeWidget> {
         0, "Danger", "Dangerous data recorded", platformNotificationDetails);
   }
 
-  // Future<void> checkPermission() async {
-  //   List<Permissions> permissionNames = await Permission.requestPermissions([
-  //     PermissionName.Storage,
-  //   ]);
-  //   if (permissionNames.elementAt(0).permissionStatus ==
-  //       PermissionStatus.allow) {
-  //     print('Permission granted');
-  //   } else {
-  //     print('Permission denied');
-  //   }
-  // }
+  Future<void> send() async {
+    final Email email = Email(
+      body: 'File containing data recorded from Oxygen sensor \n $data',
+      subject: 'Oxygen data',
+      recipients: [reccpientMail],
+    );
+    try {
+      await FlutterEmailSender.send(email);
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  _buttonState() {
+    if (emailState == true) {
+      buttonState = true;
+    }
+  }
 }

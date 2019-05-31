@@ -9,8 +9,12 @@ class ContactDev extends StatefulWidget {
 }
 
 class _ContactDevState extends State<ContactDev> {
-  bool buttonState, numberState, nameState, messageState, emailState;
-  var color;
+  bool buttonState = false,
+      numberState = false,
+      nameState = false,
+      messageState = false,
+      emailState = false;
+  var color = Colors.grey;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final Map<String, dynamic> contactInfo = {
     'fullName': null,
@@ -20,8 +24,6 @@ class _ContactDevState extends State<ContactDev> {
     'message': null
   };
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   Future<void> send() async {
     final Email email = Email(
       body: contactInfo['message'],
@@ -29,30 +31,16 @@ class _ContactDevState extends State<ContactDev> {
       recipients: ['ebaah46@yahoo.com'],
     );
 
-    String platformResponse;
-
     try {
       await FlutterEmailSender.send(email);
-      platformResponse = 'Email sent to developers';
     } catch (error) {
-      platformResponse = error.toString();
+      print(error);
     }
-
-    if (!mounted) return;
-    _scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(platformResponse),
-    ));
   }
 
   @override
   void initState() {
     super.initState();
-    buttonState = false;
-    numberState = false;
-    messageState = false;
-    nameState = false;
-    emailState = false;
-    color = Colors.grey;
   }
 
   @override
@@ -240,22 +228,27 @@ class _ContactDevState extends State<ContactDev> {
       padding:
           const EdgeInsets.only(left: 130.0, right: 130, top: 20, bottom: 20),
       child: RaisedButton(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-        elevation: 5.0,
-        highlightElevation: 10.0,
-        // shape: ,
-        textColor: Colors.white,
-        disabledColor: color,
-        child: Text("Send",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 25.0,
-                fontFamily: "Roboto")),
-        color: color,
-        splashColor: Colors.amberAccent,
-        onPressed: _run,
-      ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+          elevation: 5.0,
+          highlightElevation: 10.0,
+          // shape: ,
+          textColor: Colors.white,
+          disabledColor: color,
+          child: Text("Send",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25.0,
+                  fontFamily: "Roboto")),
+          color: color,
+          splashColor: Colors.amberAccent,
+          onPressed: () {
+            if (buttonState == false)
+              return null;
+            else {
+              _run();
+            }
+          }),
     );
   }
 
@@ -270,9 +263,9 @@ class _ContactDevState extends State<ContactDev> {
         nameState == true &&
         numberState == true &&
         emailState == true) {
-      buttonState = true;
       setState(() {
         color = Colors.deepPurple;
+        buttonState = true;
       });
       print("All data saved");
     } else {

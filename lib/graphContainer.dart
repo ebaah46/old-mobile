@@ -25,7 +25,7 @@ class _GraphState extends State<Graph> {
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: Text(
-              " Data in ",
+              " Graph of Oxygen data ",
               style: TextStyle(fontSize: 18.0, color: Colors.lightBlue),
             ),
           ),

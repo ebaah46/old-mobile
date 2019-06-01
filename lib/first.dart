@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:isolate/isolate_runner.dart';
 import 'package:old/data.dart';
+import 'package:old/safety.dart';
 import 'aboutwidget.dart' as about;
 
 //Convert Http response into a list of "Data" objects
@@ -243,8 +245,11 @@ class _FirstScreenState extends State<FirstScreen>
                                             ),
                                             GestureDetector(
                                               onTap: () {
-                                                about.AboutWidgetState
-                                                    .safetyThresholds();
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            SafetyScreen()));
                                               },
                                               child: Row(
                                                 children: <Widget>[
@@ -531,12 +536,12 @@ class _FirstScreenState extends State<FirstScreen>
         mqCounter = 0;
       });
     }
-    if (response.elementAt(0).oxyVal <= 19.5 ||
+    if (response.elementAt(response.length - 1).oxyVal <= 19.5 ||
         response.elementAt(0).oxyVal > 21.5)
       setState(() {
         rating = 0;
       });
-    else if (response.elementAt(0).oxyVal <= 20.4)
+    else if (response.elementAt(response.length - 1).oxyVal <= 20.4)
       setState(() {
         rating = 1;
       });

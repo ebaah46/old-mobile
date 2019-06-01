@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:old/contact.dart';
+import 'package:old/safety.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutWidget extends StatefulWidget {
@@ -175,13 +176,9 @@ class AboutWidgetState extends State<AboutWidget> {
     }
   }
 
-  static safetyThresholds() async {
-    const url = 'https://www.osha.gov/SLTC/indoorairquality/schools.html';
-    if (await canLaunch(url)) {
-      await launch(url, forceWebView: true, enableJavaScript: true);
-    } else {
-      throw "Cannot open $url";
-    }
+  safetyThresholds() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SafetyScreen()));
   }
 
   static faq() async {
